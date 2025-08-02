@@ -145,9 +145,6 @@
 		<Folder Include="Infrastructure\External\" />
 		<Folder Include="Infrastructure\Repositories\" />
 		<Folder Include="Logs\" />
-		<Folder Include="Presentation\Controllers\" />
-		<Folder Include="Presentation\HostedServices\" />
-		<Folder Include="Presentation\Middleware\" />
 		<Folder Include="Temp\" />
 	</ItemGroup>
 
