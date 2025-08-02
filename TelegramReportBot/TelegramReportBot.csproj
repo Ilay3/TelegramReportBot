@@ -136,10 +136,18 @@
 
 	<!-- Папки для создания при сборке -->
 	<ItemGroup>
+		<Folder Include="Application\Handlers\" />
+		<Folder Include="Application\Mappers\" />
+		<Folder Include="Application\Validators\" />
+		<Folder Include="Core\Extensions\" />
 		<Folder Include="Data\" />
+		<Folder Include="Infrastructure\Configuration\" />
+		<Folder Include="Infrastructure\External\" />
+		<Folder Include="Infrastructure\Repositories\" />
 		<Folder Include="Logs\" />
-		<Folder Include="Backups\" />
-		<Folder Include="Reports\" />
+		<Folder Include="Presentation\Controllers\" />
+		<Folder Include="Presentation\HostedServices\" />
+		<Folder Include="Presentation\Middleware\" />
 		<Folder Include="Temp\" />
 	</ItemGroup>
 
@@ -174,14 +182,8 @@
 			<TemplateFiles Include="Templates\**\*" />
 			<DocumentationFiles Include="docs\**\*" />
 		</ItemGroup>
-		<Copy SourceFiles="@(TemplateFiles)"
-			  DestinationFiles="@(TemplateFiles->'$(OutDir)Templates\%(RecursiveDir)%(Filename)%(Extension)')"
-			  SkipUnchangedFiles="true"
-			  Condition="Exists('Templates')" />
-		<Copy SourceFiles="@(DocumentationFiles)"
-			  DestinationFiles="@(DocumentationFiles->'$(OutDir)docs\%(RecursiveDir)%(Filename)%(Extension)')"
-			  SkipUnchangedFiles="true"
-			  Condition="Exists('docs')" />
+		<Copy SourceFiles="@(TemplateFiles)" DestinationFiles="@(TemplateFiles->'$(OutDir)Templates\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="Exists('Templates')" />
+		<Copy SourceFiles="@(DocumentationFiles)" DestinationFiles="@(DocumentationFiles->'$(OutDir)docs\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="Exists('docs')" />
 	</Target>
 
 	<!-- Установка прав доступа на Linux/macOS -->
@@ -235,8 +237,14 @@
 
 	<!-- Исключения из сборки -->
 	<ItemGroup>
+		<Compile Remove="Backups\**" />
+		<Compile Remove="Reports\**" />
 		<Compile Remove="Tests\**" />
+		<EmbeddedResource Remove="Backups\**" />
+		<EmbeddedResource Remove="Reports\**" />
 		<EmbeddedResource Remove="Tests\**" />
+		<None Remove="Backups\**" />
+		<None Remove="Reports\**" />
 		<None Remove="Tests\**" />
 	</ItemGroup>
 

@@ -3,10 +3,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using TelegramReportBot.Models;
-using TelegramReportBot.Models.Enum;
-using TelegramReportBot.Services;
-using TelegramReportBot.Services.Interface;
+using TelegramReportBot.Core.Enum;
+using TelegramReportBot.Core.Enums;
+using TelegramReportBot.Core.Interface;
+using TelegramReportBot.Core.Interfaces;
+using TelegramReportBot.Core.Models;
+using TelegramReportBot.Core.Models.Configuration;
+using TelegramReportBot.Core.Models.Statistics;
+using TelegramReportBot.Infrastructure.Services;
 
 namespace TelegramReportBot
 {
