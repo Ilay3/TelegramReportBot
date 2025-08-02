@@ -1,19 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace TelegramReportBot.Core.Enum;
 
-namespace TelegramReportBot.Core.Enum
+/// <summary>
+/// Типы отчётов для раздельной рассылки
+/// </summary>
+public enum ReportType
 {
     /// <summary>
-    /// Типы отчётов для раздельной рассылки
+    /// Все файлы
     /// </summary>
-    public enum ReportType
-    {
-        All,        // Все файлы
-        UserErrors, // Только пользовательские ошибки  
-        ServerErrors, // Только серверные ошибки
-        Warnings    // Только предупреждения
-    }
+    All,
+
+    /// <summary>
+    /// Только пользовательские ошибки
+    /// </summary>
+    UserErrors,
+
+    /// <summary>
+    /// Только серверные ошибки
+    /// </summary>
+    ServerErrors,
+
+    /// <summary>
+    /// Только предупреждения
+    /// </summary>
+    Warnings
 }

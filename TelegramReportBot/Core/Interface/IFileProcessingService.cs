@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TelegramReportBot.Core.Enum;
+using TelegramReportBot.Core.Enums;
+using TelegramReportBot.Core.Models;
 using TelegramReportBot.Core.Models.FileProcessing;
 using TelegramReportBot.Core.Models.Security;
 using TelegramReportBot.Core.Models.Statistics;

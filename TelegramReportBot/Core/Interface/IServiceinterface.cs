@@ -3,6 +3,7 @@ using TelegramReportBot.Core.Models.Statistics;
 using TelegramReportBot.Core.Models.Security;
 using TelegramReportBot.Core.Models.Configuration;
 using TelegramReportBot.Core.Models.FileProcessing;
+using TelegramReportBot.Core.Models;
 using TelegramReportBot.Core.Enum;
 
 namespace TelegramReportBot.Core.Interfaces;
