@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
+using TelegramReportBot.Common.Models;
 using TelegramReportBot.Core.Interfaces;
 using TelegramReportBot.Core.Models;
 using TelegramReportBot.Core.Models.Configuration;

@@ -128,24 +128,12 @@
 
 	<!-- Документация и README -->
 	<ItemGroup>
-		<None Include="README.md" />
-		<None Include="CHANGELOG.md" />
-		<None Include="LICENSE" />
 		<None Include="docs\**\*" />
 	</ItemGroup>
 
 	<!-- Папки для создания при сборке -->
 	<ItemGroup>
-		<Folder Include="Application\Handlers\" />
-		<Folder Include="Application\Mappers\" />
-		<Folder Include="Application\Validators\" />
-		<Folder Include="Core\Extensions\" />
 		<Folder Include="Data\" />
-		<Folder Include="Infrastructure\Configuration\" />
-		<Folder Include="Infrastructure\External\" />
-		<Folder Include="Infrastructure\Repositories\" />
-		<Folder Include="Logs\" />
-		<Folder Include="Temp\" />
 	</ItemGroup>
 
 	<!-- Встроенные ресурсы -->
@@ -224,24 +212,38 @@
 	</ItemGroup>
 
 	<!-- EditorConfig -->
-	<ItemGroup>
-		<None Include=".editorconfig" />
-		<None Include=".gitignore" />
-		<None Include=".dockerignore" />
-		<None Include="Dockerfile" />
-		<None Include="docker-compose.yml" />
-	</ItemGroup>
 
 	<!-- Исключения из сборки -->
 	<ItemGroup>
+		<Compile Remove="Application\**" />
 		<Compile Remove="Backups\**" />
+		<Compile Remove="Core\Extensions\**" />
+		<Compile Remove="Infrastructure\Configuration\**" />
+		<Compile Remove="Infrastructure\External\**" />
+		<Compile Remove="Infrastructure\Repositories\**" />
+		<Compile Remove="Logs\**" />
 		<Compile Remove="Reports\**" />
+		<Compile Remove="Temp\**" />
 		<Compile Remove="Tests\**" />
+		<EmbeddedResource Remove="Application\**" />
 		<EmbeddedResource Remove="Backups\**" />
+		<EmbeddedResource Remove="Core\Extensions\**" />
+		<EmbeddedResource Remove="Infrastructure\Configuration\**" />
+		<EmbeddedResource Remove="Infrastructure\External\**" />
+		<EmbeddedResource Remove="Infrastructure\Repositories\**" />
+		<EmbeddedResource Remove="Logs\**" />
 		<EmbeddedResource Remove="Reports\**" />
+		<EmbeddedResource Remove="Temp\**" />
 		<EmbeddedResource Remove="Tests\**" />
+		<None Remove="Application\**" />
 		<None Remove="Backups\**" />
+		<None Remove="Core\Extensions\**" />
+		<None Remove="Infrastructure\Configuration\**" />
+		<None Remove="Infrastructure\External\**" />
+		<None Remove="Infrastructure\Repositories\**" />
+		<None Remove="Logs\**" />
 		<None Remove="Reports\**" />
+		<None Remove="Temp\**" />
 		<None Remove="Tests\**" />
 	</ItemGroup>
 
