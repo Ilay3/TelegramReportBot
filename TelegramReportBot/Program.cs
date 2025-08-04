@@ -75,17 +75,33 @@ internal class Program
     /// <summary>
     /// Создание и настройка хоста приложения
     /// </summary>
-    static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .UseSerilog() // Используем Serilog для логирования
-            .UseWindowsService() // Поддержка Windows Service
-            .UseSystemd() // Поддержка systemd на Linux
+    static IHostBuilder CreateHostBuilder(string[] args)
+    {
+        var builder = Host.CreateDefaultBuilder(args)
+            .UseConsoleLifetime()
+            .UseSerilog(); // Используем Serilog для логирования
+
+        var runAsService = Environment.GetEnvironmentVariable("DOTNET_RUNNING_AS_SERVICE") == "true";
+
+        if (runAsService)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                builder = builder.UseWindowsService(); // Поддержка Windows Service
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                builder = builder.UseSystemd(); // Поддержка systemd на Linux
+            }
+        }
+
+        return builder
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 // Настройка конфигурации с поддержкой разных окружений
                 var env = hostingContext.HostingEnvironment.EnvironmentName;
 
-                config.SetBasePath(Directory.GetCurrentDirectory())
+                config.SetBasePath(AppContext.BaseDirectory)
                       .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                       .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
                       .AddEnvironmentVariables("TELEGRAM_BOT_")
@@ -112,6 +128,7 @@ internal class Program
                 services.AddHostedService<BotHostedService>();
                 services.AddHostedService<StatisticsHostedService>();
             });
+    }
 
     /// <summary>
     /// Главный hosted service для управления жизненным циклом бота
