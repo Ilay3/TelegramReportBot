@@ -1,27 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<AssemblyVersion>2.0.0.0</AssemblyVersion>
-		<FileVersion>2.0.0.0</FileVersion>
-		<Product>Telegram Reports Bot</Product>
-		<Company>Telegram Reports Bot Team</Company>
-		<Authors>Bot Development Team</Authors>
-		<Description>Расширенный Telegram-бот для автоматической рассылки PDF-отчётов с интеллектуальной обработкой и мониторингом</Description>
-		<Copyright>Copyright © 2024</Copyright>
-		<PackageProjectUrl>https://github.com/telegramreportsbot</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/telegramreportsbot/telegram-reports-bot</RepositoryUrl>
-		<PackageTags>telegram;bot;reports;pdf;automation;monitoring</PackageTags>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>$(NoWarn);CS1591</NoWarn>
-		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<UserSecretsId>telegram-reports-bot-secrets</UserSecretsId>
-		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisLevel>latest</AnalysisLevel>
-	</PropertyGroup>
+        <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net8.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <StartupObject>TelegramReportBot.Program</StartupObject>
+                <AssemblyVersion>2.0.0.0</AssemblyVersion>
+                <FileVersion>2.0.0.0</FileVersion>
+                <Product>Telegram Reports Bot</Product>
+                <Company>Telegram Reports Bot Team</Company>
+                <Authors>Bot Development Team</Authors>
+                <Description>Расширенный Telegram-бот для автоматической рассылки PDF-отчётов с интеллектуальной обработкой и мониторингом</Description>
+                <Copyright>Copyright © 2024</Copyright>
+                <PackageProjectUrl>https://github.com/telegramreportsbot</PackageProjectUrl>
+                <RepositoryUrl>https://github.com/telegramreportsbot/telegram-reports-bot</RepositoryUrl>
+                <PackageTags>telegram;bot;reports;pdf;automation;monitoring</PackageTags>
+                <GenerateDocumentationFile>true</GenerateDocumentationFile>
+                <NoWarn>$(NoWarn);CS1591</NoWarn>
+                <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+                <UserSecretsId>telegram-reports-bot-secrets</UserSecretsId>
+                <EnableNETAnalyzers>true</EnableNETAnalyzers>
+                <AnalysisLevel>latest</AnalysisLevel>
+        </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -99,12 +100,7 @@
 		<!-- Работа с файлами -->
 		<PackageReference Include="MimeTypes" Version="2.4.1" />
 
-		<!-- Тестирование (только для Debug) -->
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" Condition="'$(Configuration)'=='Debug'" />
-		<PackageReference Include="xunit" Version="2.6.2" Condition="'$(Configuration)'=='Debug'" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" Condition="'$(Configuration)'=='Debug'" />
-		<PackageReference Include="Moq" Version="4.20.69" Condition="'$(Configuration)'=='Debug'" />
-		<PackageReference Include="FluentAssertions" Version="6.12.0" Condition="'$(Configuration)'=='Debug'" />
+                <!-- Тестовые пакеты исключены из основного проекта -->
 	</ItemGroup>
 
 	<!-- Файлы конфигурации -->
