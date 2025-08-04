@@ -26,6 +26,7 @@ public class TelegramBotService : ITelegramBotService
     private readonly HashSet<string> _sentFiles;
     private readonly string _sentFilesPath;
 
+
     public TelegramBotService(IOptions<BotConfiguration> config, ILogger<TelegramBotService> logger)
     {
         _config = config.Value;
@@ -104,6 +105,7 @@ public class TelegramBotService : ITelegramBotService
     public async Task SendErrorNotificationAsync(Exception error)
     {
         await _botClient.SendTextMessageAsync(_config.ChatId, $"Ошибка: {error.Message}", cancellationToken: CancellationToken.None);
+
     }
 
     private async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken token)
@@ -206,6 +208,7 @@ public class TelegramBotService : ITelegramBotService
         {
             await _botClient.SendTextMessageAsync(_config.ChatId, "Новых файлов не найдено.", cancellationToken: token);
             return;
+
         }
 
         var failed = new List<string>();
@@ -283,6 +286,7 @@ public class TelegramBotService : ITelegramBotService
             : Array.Empty<string>();
 
         var count = files.Count(f => File.GetCreationTime(f) > now.AddDays(-7));
+
 
         await _botClient.SendTextMessageAsync(
             _config.ChatId,

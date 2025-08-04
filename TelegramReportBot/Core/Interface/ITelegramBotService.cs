@@ -10,4 +10,5 @@ public interface ITelegramBotService
     Task SendReportsAsync(CancellationToken cancellationToken);
     Task SendWeeklyStatisticsAsync(CancellationToken cancellationToken);
     Task SendLogFileAsync(CancellationToken cancellationToken);
+
 }
