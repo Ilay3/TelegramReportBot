@@ -38,13 +38,16 @@ public class TelegramBotService : ITelegramBotService
             ThrowPendingUpdates = true
         };
 
-        _sentFilesPath = Path.Combine(AppContext.BaseDirectory, _config.SentFilesDatabase);
+        _sentFilesPath = Path.IsPathRooted(_config.SentFilesDatabase)
+            ? _config.SentFilesDatabase
+            : Path.Combine(AppContext.BaseDirectory, _config.SentFilesDatabase);
         if (File.Exists(_sentFilesPath))
-            _sentFiles = new HashSet<string>(File.ReadAllLines(_sentFilesPath));
+            _sentFiles = File.ReadAllLines(_sentFilesPath)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
         else
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_sentFilesPath)!);
-            _sentFiles = new HashSet<string>();
+            _sentFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 
@@ -219,7 +222,7 @@ public class TelegramBotService : ITelegramBotService
             if (ok)
             {
                 _sentFiles.Add(Path.GetFileName(file));
-                await File.AppendAllLinesAsync(_sentFilesPath, new[] { Path.GetFileName(file) }, token);
+                await File.WriteAllLinesAsync(_sentFilesPath, _sentFiles, token);
             }
             else
             {
@@ -254,6 +257,12 @@ public class TelegramBotService : ITelegramBotService
     }
 
     public Task SendReportsAsync(CancellationToken token) => SendFilesAsync(ReportType.All, token);
+
+    public async Task SendErrorReportsAsync(CancellationToken token)
+    {
+        await SendFilesAsync(ReportType.UserErrors, token);
+        await SendFilesAsync(ReportType.ServerErrors, token);
+    }
 
     public async Task SendLogFileAsync(CancellationToken token)
     {

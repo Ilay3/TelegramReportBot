@@ -21,7 +21,7 @@ namespace TelegramReportBot.Core.Models.Configuration
         /// <summary>
         /// ID топиков для разных типов отчётов
         /// </summary>
-        public TopicIds TopicIds { get; set; } = new();
+        public TopicIds TopicIds { get; set; } = new TopicIds();
 
         /// <summary>
         /// Папка для мониторинга PDF-файлов
@@ -36,11 +36,11 @@ namespace TelegramReportBot.Core.Models.Configuration
         /// <summary>
         /// Фильтры для определения типа файла по имени
         /// </summary>
-        public Dictionary<string, string> FileFilters { get; set; } = new();
+        public Dictionary<string, string> FileFilters { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Настройки расписания
         /// </summary>
-        public ScheduleSettings Schedule { get; set; } = new();
+        public ScheduleSettings Schedule { get; set; } = new ScheduleSettings();
     }
 }
