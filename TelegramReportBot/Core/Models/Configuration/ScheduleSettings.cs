@@ -14,4 +14,9 @@ public class ScheduleSettings
     /// Cron-выражение для автоматической рассылки отчётов
     /// </summary>
     public string ReportsCron { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Cron-выражение для ежедневной отправки отчётов об ошибках
+    /// </summary>
+    public string ErrorReportsCron { get; set; } = string.Empty;
 }

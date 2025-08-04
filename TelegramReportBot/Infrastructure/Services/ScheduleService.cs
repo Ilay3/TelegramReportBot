@@ -34,6 +34,9 @@ public class ScheduleService : BackgroundService
         CronExpression? reportsCron = string.IsNullOrWhiteSpace(_schedule.ReportsCron)
             ? null
             : CronExpression.Parse(_schedule.ReportsCron);
+        CronExpression? errorCron = string.IsNullOrWhiteSpace(_schedule.ErrorReportsCron)
+            ? null
+            : CronExpression.Parse(_schedule.ErrorReportsCron);
 
         if (statsCron == null && reportsCron == null)
         {
@@ -47,8 +50,9 @@ public class ScheduleService : BackgroundService
 
             var nextStats = statsCron?.GetNextOccurrence(now, TimeZoneInfo.Local);
             var nextReports = reportsCron?.GetNextOccurrence(now, TimeZoneInfo.Local);
+            var nextErrors = errorCron?.GetNextOccurrence(now, TimeZoneInfo.Local);
 
-            var nextRuns = new[] { nextStats, nextReports }
+            var nextRuns = new[] { nextStats, nextReports, nextErrors }
                 .Where(d => d.HasValue)
                 .Select(d => d!.Value)
                 .ToList();
@@ -74,6 +78,12 @@ public class ScheduleService : BackgroundService
             {
                 _logger.LogInformation("Запуск плановой рассылки отчётов");
                 await _botService.SendReportsAsync(stoppingToken);
+            }
+
+            if (nextErrors.HasValue && next == nextErrors.Value)
+            {
+                _logger.LogInformation("Запуск плановой рассылки отчётов об ошибках");
+                await _botService.SendErrorReportsAsync(stoppingToken);
             }
         }
     }

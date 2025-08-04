@@ -8,6 +8,7 @@ public interface ITelegramBotService
     Task SendStartupNotificationAsync();
     Task SendErrorNotificationAsync(Exception error);
     Task SendReportsAsync(CancellationToken cancellationToken);
+    Task SendErrorReportsAsync(CancellationToken cancellationToken);
     Task SendWeeklyStatisticsAsync(CancellationToken cancellationToken);
     Task SendLogFileAsync(CancellationToken cancellationToken);
 
