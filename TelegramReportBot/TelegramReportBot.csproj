@@ -31,56 +31,30 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Основные пакеты Microsoft Extensions -->
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+                <!-- Основные пакеты -->
+                <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+                <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+                <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 
-		<!-- Telegram Bot API -->
-		<PackageReference Include="Telegram.Bot" Version="19.0.0" />
+                <!-- Telegram Bot API -->
+                <PackageReference Include="Telegram.Bot" Version="19.0.0" />
 
-		<!-- Логирование с Serilog -->
-		<PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
-		<PackageReference Include="Serilog.Sinks.Console" Version="5.0.0" />
-		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-		<PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+                <!-- Логирование с Serilog -->
+                <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+                <PackageReference Include="Serilog.Sinks.Console" Version="5.0.0" />
+                <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+                <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
 
-		<!-- Работа с JSON -->
-		<PackageReference Include="System.Text.Json" Version="8.0.0" />
-
-		<!-- Безопасность и криптография -->
-		<PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
-
-		<!-- Работа с архивами -->
-		<PackageReference Include="System.IO.Compression" Version="4.3.0" />
-		<PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
-
-		<!-- HTTP клиент -->
-		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-
-		<!-- Производительность и мониторинг -->
-		<PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
-	</ItemGroup>
+                <!-- Планировщик -->
+                <PackageReference Include="Cronos" Version="0.7.2" />
+        </ItemGroup>
 
 	<!-- Файлы конфигурации -->
-	<ItemGroup>
-		<None Update="appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="appsettings.Development.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="appsettings.Production.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+        <ItemGroup>
+                <None Update="appsettings.json">
+                        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                </None>
+        </ItemGroup>
 
 	<!-- Создание папок при сборке -->
 	<Target Name="CreateDirectories" BeforeTargets="Build">

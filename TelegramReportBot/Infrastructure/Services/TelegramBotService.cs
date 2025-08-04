@@ -1,310 +1,292 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using TelegramReportBot.Core.Enum;
-using TelegramReportBot.Core.Enums;
-using TelegramReportBot.Core.Interface;
 using TelegramReportBot.Core.Interfaces;
 using TelegramReportBot.Core.Models.Configuration;
+using File = System.IO.File;
 
 namespace TelegramReportBot.Infrastructure.Services;
 
-/// <summary>
-/// Сервис для работы с Telegram Bot API
-/// </summary>
 public class TelegramBotService : ITelegramBotService
 {
     private readonly ITelegramBotClient _botClient;
     private readonly BotConfiguration _config;
     private readonly ILogger<TelegramBotService> _logger;
     private readonly ReceiverOptions _receiverOptions;
-
-    public event Func<ReportType, string, Task>? ManualDistributionRequested;
+    private readonly HashSet<string> _sentFiles;
+    private readonly string _sentFilesPath;
 
     public TelegramBotService(IOptions<BotConfiguration> config, ILogger<TelegramBotService> logger)
     {
         _config = config.Value;
         _logger = logger;
-
-        // Инициализация Telegram Bot Client
         _botClient = new TelegramBotClient(_config.Token);
-
-        // Настройки получения обновлений
         _receiverOptions = new ReceiverOptions
         {
             AllowedUpdates = new[] { UpdateType.Message },
             ThrowPendingUpdates = true
         };
+
+        _sentFilesPath = Path.Combine(AppContext.BaseDirectory, _config.SentFilesDatabase);
+        if (File.Exists(_sentFilesPath))
+            _sentFiles = new HashSet<string>(File.ReadAllLines(_sentFilesPath));
+        else
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(_sentFilesPath)!);
+            _sentFiles = new HashSet<string>();
+        }
     }
 
-    /// <summary>
-    /// Запуск бота
-    /// </summary>
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("🚀 Запуск Telegram-бота...");
-
-        try
-        {
-            // Получаем информацию о боте
-            var me = await _botClient.GetMeAsync(cancellationToken);
-            _logger.LogInformation("🤖 Бот запущен: @{Username} (ID: {BotId})", me.Username, me.Id);
-
-            // Начинаем получать обновления
-            _botClient.StartReceiving(
-                updateHandler: HandleUpdateAsync,
-                pollingErrorHandler: HandlePollingErrorAsync,
-                receiverOptions: _receiverOptions,
-                cancellationToken: cancellationToken
-            );
-
-            _logger.LogInformation("✅ Бот готов к работе");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "💥 Ошибка запуска бота");
-            throw;
-        }
+        _logger.LogInformation("Запуск Telegram-бота...");
+        _botClient.StartReceiving(HandleUpdateAsync, HandleErrorAsync, _receiverOptions, cancellationToken);
+        await SendStartupNotificationAsync();
     }
 
-    /// <summary>
-    /// Остановка бота
-    /// </summary>
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("⏹️ Остановка Telegram-бота...");
+        _logger.LogInformation("Остановка Telegram-бота...");
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Отправка PDF-файла
-    /// </summary>
-    public async Task<bool> SendPdfFileAsync(string filePath, int topicId, string caption)
+    public async Task<bool> SendPdfFileAsync(string filePath, string caption, int? threadId = null)
     {
+        if (!File.Exists(filePath))
+        {
+            var ex = new FileNotFoundException("Файл не найден", filePath);
+            await SendErrorNotificationAsync(ex);
+            _logger.LogWarning(ex, "Файл отсутствует {File}", filePath);
+            return false;
+        }
+
         try
         {
-            _logger.LogInformation("📤 Отправка файла {FileName} в топик {TopicId}",
-                Path.GetFileName(filePath), topicId);
-
-            await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            var inputFile = InputFile.FromStream(fileStream, Path.GetFileName(filePath));
-
-            var message = await _botClient.SendDocumentAsync(
-                chatId: _config.ChatId,
-                document: inputFile,
+            await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            var inputFile = InputFile.FromStream(stream, Path.GetFileName(filePath));
+            await _botClient.SendDocumentAsync(
+                _config.ChatId,
+                inputFile,
                 caption: caption,
-                messageThreadId: topicId,
-                cancellationToken: CancellationToken.None
-            );
-
-            _logger.LogInformation("✅ Файл {FileName} успешно отправлен в топик {TopicId}. MessageId: {MessageId}",
-                Path.GetFileName(filePath), topicId, message.MessageId);
-
+                messageThreadId: threadId,
+                cancellationToken: CancellationToken.None);
             return true;
         }
-        catch (ApiRequestException apiEx) when (apiEx.ErrorCode == 429)
+        catch (ApiRequestException ex) when (ex.ErrorCode == 429)
         {
-            _logger.LogWarning("⏳ Rate limit от Telegram API. Повторная попытка через 5 секунд");
-            await Task.Delay(5000);
+            await SendErrorNotificationAsync(ex);
+            _logger.LogWarning("Rate limit от Telegram API");
             return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "❌ Ошибка отправки файла {FileName} в топик {TopicId}",
-                Path.GetFileName(filePath), topicId);
+            await SendErrorNotificationAsync(ex);
+            _logger.LogError(ex, "Ошибка отправки файла {File}", filePath);
             return false;
         }
     }
 
-    /// <summary>
-    /// Отправка уведомления о запуске
-    /// </summary>
     public async Task SendStartupNotificationAsync()
     {
-        try
-        {
-            var startupMessage = $"""
-                🚀 **TELEGRAM REPORTS BOT ЗАПУЩЕН**
-                
-                ⏰ **Время запуска:** {DateTime.Now:dd.MM.yyyy HH:mm:ss}
-                📁 **Папка мониторинга:** `{_config.ReportsFolder}`
-                👥 **Администраторы:** {_config.AdminUsers.Count}
-                
-                ✅ Бот готов к работе!
-                
-                **Доступные команды:**
-                • `/рассылка` - ручная рассылка всех файлов
-                • `/статус` - статус системы
-                """;
-
-            await SendToAdminsAsync(startupMessage);
-            _logger.LogInformation("📢 Уведомление о запуске отправлено администраторам");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "❌ Ошибка отправки уведомления о запуске");
-        }
+        await _botClient.SendTextMessageAsync(_config.ChatId, "Бот запущен и готов к работе.", cancellationToken: CancellationToken.None);
     }
 
-    /// <summary>
-    /// Отправка уведомления об ошибке
-    /// </summary>
     public async Task SendErrorNotificationAsync(Exception error)
     {
-        try
-        {
-            var errorMessage = $"""
-                🚨 **КРИТИЧЕСКАЯ ОШИБКА В БОТЕ**
-                
-                ⏰ **Время:** {DateTime.Now:dd.MM.yyyy HH:mm:ss}
-                ❌ **Ошибка:** `{error.Message}`
-                
-                **Требуется вмешательство администратора!**
-                """;
-
-            await SendToAdminsAsync(errorMessage);
-            _logger.LogInformation("🚨 Уведомление об ошибке отправлено администраторам");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "❌ Ошибка отправки уведомления об ошибке");
-        }
+        await _botClient.SendTextMessageAsync(_config.ChatId, $"Ошибка: {error.Message}", cancellationToken: CancellationToken.None);
     }
 
-    // Приватные методы
-
-    private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken token)
     {
-        try
+        if (update.Type != UpdateType.Message || update.Message?.Text == null)
+            return;
+
+        var text = update.Message.Text.ToLowerInvariant();
+        var chatId = update.Message.Chat.Id;
+
+        if (!long.TryParse(_config.ChatId, out var allowedChat) || chatId != allowedChat)
         {
-            if (update.Type == UpdateType.Message && update.Message?.Text is { } messageText)
-            {
-                await HandleMessageAsync(update.Message, cancellationToken);
-            }
+            await _botClient.SendTextMessageAsync(chatId, "Доступ запрещён.", cancellationToken: token);
+            return;
         }
-        catch (Exception ex)
+
+        switch (text)
         {
-            _logger.LogError(ex, "❌ Ошибка обработки обновления");
-        }
-    }
-
-    private async Task HandleMessageAsync(Message message, CancellationToken cancellationToken)
-    {
-        var chatId = message.Chat.Id;
-        var userId = message.From?.Id.ToString() ?? "Unknown";
-        var messageText = message.Text!;
-
-        _logger.LogInformation("💬 Сообщение от {UserId}: {MessageText}", userId, messageText);
-
-        switch (messageText.ToLowerInvariant())
-        {
-            case "/рассылка":
             case "/start":
-                await HandleDistributionCommand(chatId, userId, cancellationToken);
+                await SendMainMenuAsync(chatId, token);
                 break;
-            case "/статус":
-                await HandleStatusCommand(chatId, cancellationToken);
+            case "📤 рассылка":
+            case "рассылка":
+                await SendFilesAsync(ReportType.All, token);
+                break;
+            case "👤 пользовательские ошибки":
+            case "пользовательские ошибки":
+                await SendFilesAsync(ReportType.UserErrors, token);
+                break;
+            case "🖥️ серверные ошибки":
+            case "серверные ошибки":
+                await SendFilesAsync(ReportType.ServerErrors, token);
+                break;
+            case "⚠️ предупреждения":
+            case "предупреждения":
+                await SendFilesAsync(ReportType.Warnings, token);
+                break;
+            case "📊 статистика":
+            case "статистика":
+                await SendWeeklyStatisticsAsync(token);
+                break;
+            case "📜 логи":
+            case "логи":
+                await SendLogFileAsync(token);
                 break;
             default:
-                if (messageText.StartsWith("/"))
-                {
-                    await _botClient.SendTextMessageAsync(
-                        chatId: chatId,
-                        text: "❓ Неизвестная команда. Доступные команды:\n• /рассылка - ручная рассылка\n• /статус - статус системы",
-                        cancellationToken: cancellationToken
-                    );
-                }
+                await SendMainMenuAsync(chatId, token);
                 break;
         }
     }
 
-    private async Task HandleDistributionCommand(long chatId, string userId, CancellationToken cancellationToken)
+    private Task HandleErrorAsync(ITelegramBotClient bot, Exception ex, CancellationToken token)
     {
-        try
-        {
-            await _botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "🔄 Запуск ручной рассылки всех новых файлов...",
-                cancellationToken: cancellationToken
-            );
-
-            // Вызываем событие для запуска рассылки
-            if (ManualDistributionRequested != null)
-            {
-                await ManualDistributionRequested.Invoke(ReportType.All, userId);
-            }
-
-            await _botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "✅ Рассылка завершена!",
-                cancellationToken: cancellationToken
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "❌ Ошибка обработки команды рассылки");
-            await _botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "❌ Ошибка при выполнении рассылки",
-                cancellationToken: cancellationToken
-            );
-        }
-    }
-
-    private async Task HandleStatusCommand(long chatId, CancellationToken cancellationToken)
-    {
-        var statusText = $"""
-            📊 **СТАТУС СИСТЕМЫ**
-            
-            🟢 **Статус:** Работает
-            ⏰ **Время работы:** {DateTime.Now:HH:mm:ss dd.MM.yyyy}
-            📁 **Папка:** `{_config.ReportsFolder}`
-            """;
-
-        await _botClient.SendTextMessageAsync(
-            chatId: chatId,
-            text: statusText,
-            parseMode: ParseMode.Markdown,
-            cancellationToken: cancellationToken
-        );
-    }
-
-    private Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
-    {
-        var errorMessage = exception switch
-        {
-            ApiRequestException apiRequestException
-                => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
-            _ => exception.ToString()
-        };
-
-        _logger.LogError("❌ Ошибка получения обновлений: {ErrorMessage}", errorMessage);
+        _logger.LogError(ex, "Ошибка Telegram");
         return Task.CompletedTask;
     }
 
-    private async Task SendToAdminsAsync(string message)
+    private async Task SendMainMenuAsync(long chatId, CancellationToken token)
     {
-        foreach (var adminUser in _config.AdminUsers)
+        var keyboard = new ReplyKeyboardMarkup(new[]
         {
-            try
+            new[] { new KeyboardButton("📤 Рассылка"), new KeyboardButton("📊 Статистика") },
+            new[] { new KeyboardButton("👤 Пользовательские ошибки"), new KeyboardButton("🖥️ Серверные ошибки") },
+            new[] { new KeyboardButton("⚠️ Предупреждения"), new KeyboardButton("📜 Логи") }
+        })
+        {
+            ResizeKeyboard = true
+        };
+
+        await _botClient.SendTextMessageAsync(chatId, "Выберите действие:", replyMarkup: keyboard, cancellationToken: token);
+    }
+
+    private async Task SendFilesAsync(ReportType reportType, CancellationToken token)
+    {
+        if (!Directory.Exists(_config.ReportsFolder))
+        {
+            await _botClient.SendTextMessageAsync(_config.ChatId, "Папка с отчётами не найдена.", cancellationToken: token);
+            return;
+        }
+
+        var files = Directory.GetFiles(_config.ReportsFolder, "*.pdf");
+
+        string GetFilter(string key) =>
+            _config.FileFilters.TryGetValue(key, out var value) ? value : string.Empty;
+
+        var userFilter = GetFilter(nameof(ReportType.UserErrors));
+        var serverFilter = GetFilter(nameof(ReportType.ServerErrors));
+        var warningFilter = GetFilter(nameof(ReportType.Warnings));
+
+        IEnumerable<string> filtered = reportType switch
+        {
+            ReportType.UserErrors => files.Where(f => f.Contains(userFilter, StringComparison.OrdinalIgnoreCase)),
+            ReportType.ServerErrors => files.Where(f => f.Contains(serverFilter, StringComparison.OrdinalIgnoreCase)),
+            ReportType.Warnings => files.Where(f => f.Contains(warningFilter, StringComparison.OrdinalIgnoreCase)),
+            _ => files
+        };
+        filtered = filtered.Where(f => !_sentFiles.Contains(Path.GetFileName(f))).ToList();
+
+        if (!filtered.Any())
+        {
+            await _botClient.SendTextMessageAsync(_config.ChatId, "Новых файлов не найдено.", cancellationToken: token);
+            return;
+        }
+
+        var failed = new List<string>();
+        foreach (var file in filtered)
+        {
+            var threadId = GetThreadId(reportType, file, userFilter, serverFilter, warningFilter);
+            var ok = await SendPdfFileAsync(file, Path.GetFileName(file), threadId);
+            if (ok)
             {
-                if (long.TryParse(adminUser.Replace("@", ""), out var chatId))
-                {
-                    await _botClient.SendTextMessageAsync(
-                        chatId: chatId,
-                        text: message,
-                        parseMode: ParseMode.Markdown
-                    );
-                }
+                _sentFiles.Add(Path.GetFileName(file));
+                await File.AppendAllLinesAsync(_sentFilesPath, new[] { Path.GetFileName(file) }, token);
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError(ex, "❌ Ошибка отправки сообщения админу {AdminUser}", adminUser);
+                failed.Add(Path.GetFileName(file));
             }
         }
+
+        if (failed.Any())
+        {
+            await _botClient.SendTextMessageAsync(_config.ChatId,
+                $"Не удалось отправить: {string.Join(", ", failed)}",
+                cancellationToken: token);
+        }
+        else
+        {
+            await _botClient.SendTextMessageAsync(_config.ChatId, "Готово.", cancellationToken: token);
+        }
+    }
+
+    private int? GetThreadId(ReportType type, string filePath, string userFilter, string serverFilter, string warningFilter)
+    {
+        return type switch
+        {
+            ReportType.UserErrors => _config.TopicIds.UserErrors,
+            ReportType.ServerErrors => _config.TopicIds.ServerErrors,
+            ReportType.Warnings => _config.TopicIds.Warnings,
+            ReportType.All when !string.IsNullOrEmpty(userFilter) && filePath.Contains(userFilter, StringComparison.OrdinalIgnoreCase) => _config.TopicIds.UserErrors,
+            ReportType.All when !string.IsNullOrEmpty(serverFilter) && filePath.Contains(serverFilter, StringComparison.OrdinalIgnoreCase) => _config.TopicIds.ServerErrors,
+            ReportType.All when !string.IsNullOrEmpty(warningFilter) && filePath.Contains(warningFilter, StringComparison.OrdinalIgnoreCase) => _config.TopicIds.Warnings,
+            _ => (int?)null
+        };
+    }
+
+    public Task SendReportsAsync(CancellationToken token) => SendFilesAsync(ReportType.All, token);
+
+    public async Task SendLogFileAsync(CancellationToken token)
+    {
+        var logsDir = Path.Combine(AppContext.BaseDirectory, "Logs");
+        if (!Directory.Exists(logsDir))
+        {
+            await _botClient.SendTextMessageAsync(_config.ChatId, "Логи отсутствуют.", cancellationToken: token);
+            return;
+        }
+
+        var file = Directory.GetFiles(logsDir, "log-*.txt")
+            .OrderByDescending(f => f)
+            .FirstOrDefault();
+        if (file == null)
+        {
+            await _botClient.SendTextMessageAsync(_config.ChatId, "Логи отсутствуют.", cancellationToken: token);
+            return;
+        }
+
+        await using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var inputFile = InputFile.FromStream(stream, Path.GetFileName(file));
+        await _botClient.SendDocumentAsync(_config.ChatId, inputFile, cancellationToken: token);
+    }
+
+    public async Task SendWeeklyStatisticsAsync(CancellationToken token)
+    {
+        var now = DateTime.Now;
+        var files = Directory.Exists(_config.ReportsFolder)
+            ? Directory.GetFiles(_config.ReportsFolder, "*.pdf")
+            : Array.Empty<string>();
+
+        var count = files.Count(f => File.GetCreationTime(f) > now.AddDays(-7));
+
+        await _botClient.SendTextMessageAsync(
+            _config.ChatId,
+            $"Отчёты за неделю: {count}",
+            cancellationToken: token);
     }
 }
