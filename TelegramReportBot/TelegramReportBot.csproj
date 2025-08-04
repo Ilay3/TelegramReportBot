@@ -147,15 +147,7 @@
 		<MakeDir Directories="$(OutDir)Temp" Condition="!Exists('$(OutDir)Temp')" />
 	</Target>
 
-	<!-- Очистка временных файлов при Clean -->
-	<Target Name="CleanTempFiles" BeforeTargets="Clean">
-		<ItemGroup>
-			<TempFiles Include="$(OutDir)Temp\**\*" />
-			<OldLogs Include="$(OutDir)Logs\*.txt" Condition="$([System.DateTime]::Now.Subtract($([System.IO.File]::GetCreationTime('%(FullPath)'))).Days) &gt; 30" />
-		</ItemGroup>
-		<Delete Files="@(TempFiles)" ContinueOnError="true" />
-		<Delete Files="@(OldLogs)" ContinueOnError="true" />
-	</Target>
+	
 
 	<!-- Копирование шаблонов и документации -->
 	<Target Name="CopyTemplates" AfterTargets="Build">
