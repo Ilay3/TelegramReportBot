@@ -1,28 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-        <PropertyGroup>
-                <OutputType>Exe</OutputType>
-                <TargetFramework>net8.0</TargetFramework>
-                <ImplicitUsings>enable</ImplicitUsings>
-                <Nullable>enable</Nullable>
-                <StartupObject>TelegramReportBot.Program</StartupObject>
-                <AssemblyVersion>2.0.0.0</AssemblyVersion>
-                <FileVersion>2.0.0.0</FileVersion>
-                <Product>Telegram Reports Bot</Product>
-                <Company>Telegram Reports Bot Team</Company>
-                <Authors>Bot Development Team</Authors>
-                <Description>Расширенный Telegram-бот для автоматической рассылки PDF-отчётов с интеллектуальной обработкой и мониторингом</Description>
-                <Copyright>Copyright © 2024</Copyright>
-                <PackageProjectUrl>https://github.com/telegramreportsbot</PackageProjectUrl>
-                <RepositoryUrl>https://github.com/telegramreportsbot/telegram-reports-bot</RepositoryUrl>
-                <PackageTags>telegram;bot;reports;pdf;automation;monitoring</PackageTags>
-                <GenerateDocumentationFile>true</GenerateDocumentationFile>
-                <NoWarn>$(NoWarn);CS1591</NoWarn>
-                <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-                <UserSecretsId>telegram-reports-bot-secrets</UserSecretsId>
-                <EnableNETAnalyzers>true</EnableNETAnalyzers>
-                <AnalysisLevel>latest</AnalysisLevel>
-        </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<StartupObject>TelegramReportBot.Program</StartupObject>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+		<Product>Telegram Reports Bot</Product>
+		<Company></Company>
+		<Authors></Authors>
+		<Description>Telegram-бот для автоматической рассылки PDF-отчётов</Description>
+		<Copyright>Copyright © 2024</Copyright>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
+		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -44,7 +38,6 @@
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
@@ -58,18 +51,12 @@
 		<PackageReference Include="Serilog.Sinks.Console" Version="5.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
 		<PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
-		<PackageReference Include="Serilog.Enrichers.Environment" Version="2.3.0" />
-		<PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-		<PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
-		<PackageReference Include="Serilog.Formatting.Compact" Version="2.0.0" />
 
 		<!-- Работа с JSON -->
 		<PackageReference Include="System.Text.Json" Version="8.0.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 
 		<!-- Безопасность и криптография -->
 		<PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
-		<PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
 
 		<!-- Работа с архивами -->
 		<PackageReference Include="System.IO.Compression" Version="4.3.0" />
@@ -77,30 +64,9 @@
 
 		<!-- HTTP клиент -->
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.0" />
-		<PackageReference Include="Polly" Version="7.2.4" />
-		<PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
 
 		<!-- Производительность и мониторинг -->
 		<PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.0" />
-
-		<!-- Планировщик задач -->
-		<PackageReference Include="Quartz" Version="3.8.0" />
-		<PackageReference Include="Quartz.Extensions.Hosting" Version="3.8.0" />
-
-		<!-- Валидация -->
-		<PackageReference Include="FluentValidation" Version="11.8.1" />
-		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.1" />
-
-		<!-- Утилиты -->
-		<PackageReference Include="Humanizer" Version="2.14.1" />
-		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-
-		<!-- Работа с файлами -->
-		<PackageReference Include="MimeTypes" Version="2.4.1" />
-
-                <!-- Тестовые пакеты исключены из основного проекта -->
 	</ItemGroup>
 
 	<!-- Файлы конфигурации -->
@@ -110,32 +76,10 @@
 		</None>
 		<None Update="appsettings.Development.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<DependentUpon>appsettings.json</DependentUpon>
 		</None>
 		<None Update="appsettings.Production.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<DependentUpon>appsettings.json</DependentUpon>
 		</None>
-		<None Update="appsettings.Testing.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<DependentUpon>appsettings.json</DependentUpon>
-		</None>
-	</ItemGroup>
-
-	<!-- Документация и README -->
-	<ItemGroup>
-		<None Include="docs\**\*" />
-	</ItemGroup>
-
-	<!-- Папки для создания при сборке -->
-	<ItemGroup>
-		<Folder Include="Data\" />
-	</ItemGroup>
-
-	<!-- Встроенные ресурсы -->
-	<ItemGroup>
-		<EmbeddedResource Include="Resources\*.json" />
-		<EmbeddedResource Include="Resources\Templates\*.txt" />
 	</ItemGroup>
 
 	<!-- Создание папок при сборке -->
@@ -143,107 +87,19 @@
 		<MakeDir Directories="$(OutDir)Data" Condition="!Exists('$(OutDir)Data')" />
 		<MakeDir Directories="$(OutDir)Logs" Condition="!Exists('$(OutDir)Logs')" />
 		<MakeDir Directories="$(OutDir)Backups" Condition="!Exists('$(OutDir)Backups')" />
-		<MakeDir Directories="$(OutDir)Reports" Condition="!Exists('$(OutDir)Reports')" />
-		<MakeDir Directories="$(OutDir)Temp" Condition="!Exists('$(OutDir)Temp')" />
 	</Target>
-
-	
-
-	<!-- Копирование шаблонов и документации -->
-	<Target Name="CopyTemplates" AfterTargets="Build">
-		<ItemGroup>
-			<TemplateFiles Include="Templates\**\*" />
-			<DocumentationFiles Include="docs\**\*" />
-		</ItemGroup>
-		<Copy SourceFiles="@(TemplateFiles)" DestinationFiles="@(TemplateFiles->'$(OutDir)Templates\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="Exists('Templates')" />
-		<Copy SourceFiles="@(DocumentationFiles)" DestinationFiles="@(DocumentationFiles->'$(OutDir)docs\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="Exists('docs')" />
-	</Target>
-
-	<!-- Установка прав доступа на Linux/macOS -->
-	<Target Name="SetExecutablePermissions" AfterTargets="Publish" Condition="'$(OS)' != 'Windows_NT'">
-		<Exec Command="chmod +x $(PublishDir)$(AssemblyName)" ContinueOnError="true" />
-	</Target>
-
-	<!-- Генерация версии из Git -->
-	<Target Name="GetGitInfo" BeforeTargets="GetAssemblyVersion" Condition="Exists('.git')">
-		<Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true" ContinueOnError="true">
-			<Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
-		</Exec>
-		<Exec Command="git describe --tags --abbrev=0" ConsoleToMSBuild="true" ContinueOnError="true">
-			<Output TaskParameter="ConsoleOutput" PropertyName="GitTag" />
-		</Exec>
-		<PropertyGroup>
-			<InformationalVersion Condition="'$(GitCommitHash)' != ''">$(Version)+$(GitCommitHash)</InformationalVersion>
-			<InformationalVersion Condition="'$(GitCommitHash)' == ''">$(Version)</InformationalVersion>
-		</PropertyGroup>
-	</Target>
-
-	<!-- Дополнительные свойства для публикации -->
-	<PropertyGroup>
-		<PublishTrimmed>false</PublishTrimmed>
-		<PublishSingleFile>false</PublishSingleFile>
-		<PublishReadyToRun>true</PublishReadyToRun>
-		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-	</PropertyGroup>
-
-	<!-- Настройки для Docker -->
-	<PropertyGroup>
-		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-		<DockerfileContext>.</DockerfileContext>
-	</PropertyGroup>
-
-	<!-- Анализаторы кода -->
-	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" PrivateAssets="all" />
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="9.12.0.78982" PrivateAssets="all" />
-	</ItemGroup>
-
-	<!-- EditorConfig -->
 
 	<!-- Исключения из сборки -->
 	<ItemGroup>
-		<Compile Remove="Application\**" />
 		<Compile Remove="Backups\**" />
-		<Compile Remove="Core\Extensions\**" />
-		<Compile Remove="Infrastructure\Configuration\**" />
-		<Compile Remove="Infrastructure\External\**" />
-		<Compile Remove="Infrastructure\Repositories\**" />
 		<Compile Remove="Logs\**" />
-		<Compile Remove="Reports\**" />
 		<Compile Remove="Temp\**" />
-		<Compile Remove="Tests\**" />
-		<EmbeddedResource Remove="Application\**" />
 		<EmbeddedResource Remove="Backups\**" />
-		<EmbeddedResource Remove="Core\Extensions\**" />
-		<EmbeddedResource Remove="Infrastructure\Configuration\**" />
-		<EmbeddedResource Remove="Infrastructure\External\**" />
-		<EmbeddedResource Remove="Infrastructure\Repositories\**" />
 		<EmbeddedResource Remove="Logs\**" />
-		<EmbeddedResource Remove="Reports\**" />
 		<EmbeddedResource Remove="Temp\**" />
-		<EmbeddedResource Remove="Tests\**" />
-		<None Remove="Application\**" />
 		<None Remove="Backups\**" />
-		<None Remove="Core\Extensions\**" />
-		<None Remove="Infrastructure\Configuration\**" />
-		<None Remove="Infrastructure\External\**" />
-		<None Remove="Infrastructure\Repositories\**" />
 		<None Remove="Logs\**" />
-		<None Remove="Reports\**" />
 		<None Remove="Temp\**" />
-		<None Remove="Tests\**" />
 	</ItemGroup>
-
-	<!-- Условная компиляция для разных окружений -->
-	<PropertyGroup Condition="'$(Environment)'=='Development'">
-		<DefineConstants>$(DefineConstants);DEVELOPMENT</DefineConstants>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Environment)'=='Production'">
-		<DefineConstants>$(DefineConstants);PRODUCTION</DefineConstants>
-		<DebugType>none</DebugType>
-		<DebugSymbols>false</DebugSymbols>
-	</PropertyGroup>
 
 </Project>
