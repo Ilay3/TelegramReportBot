@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using TelegramReportBot.Core.Interfaces;
 using TelegramReportBot.Core.Models.Configuration;
 using TelegramReportBot.Infrastructure.Services;
@@ -11,6 +12,8 @@ public class Program
     public static async Task Main(string[] args)
     {
         var host = Host.CreateDefaultBuilder(args)
+            .UseSerilog((context, services, configuration) =>
+                configuration.ReadFrom.Configuration(context.Configuration))
             .ConfigureServices((context, services) =>
             {
                 services.Configure<BotConfiguration>(
@@ -18,6 +21,7 @@ public class Program
 
                 services.AddSingleton<ITelegramBotService, TelegramBotService>();
                 services.AddHostedService<BotHostedService>();
+                services.AddHostedService<ScheduleService>();
             })
             .Build();
 

@@ -34,18 +34,13 @@ namespace TelegramReportBot.Core.Models.Configuration
         public string SentFilesDatabase { get; set; } = string.Empty;
 
         /// <summary>
-        /// Список администраторов бота
+        /// Фильтры для определения типа файла по имени
         /// </summary>
-        public List<string> AdminUsers { get; set; } = new();
+        public Dictionary<string, string> FileFilters { get; set; } = new();
 
         /// <summary>
-        /// Настройки уведомлений
+        /// Настройки расписания
         /// </summary>
-        public NotificationSettings NotificationSettings { get; set; } = new();
-
-        /// <summary>
-        /// Настройки ограничения скорости
-        /// </summary>
-        public RateLimitingSettings RateLimiting { get; set; } = new();
+        public ScheduleSettings Schedule { get; set; } = new();
     }
 }
