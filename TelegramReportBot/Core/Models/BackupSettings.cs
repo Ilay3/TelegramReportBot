@@ -1,4 +1,4 @@
-﻿namespace TelegramReportBot.Common.Models;
+namespace TelegramReportBot.Core.Models;
 
 /// <summary>
 /// Настройки резервного копирования

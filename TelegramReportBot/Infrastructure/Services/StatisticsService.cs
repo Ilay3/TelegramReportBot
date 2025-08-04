@@ -5,13 +5,12 @@ using System.Text;
 using System.Text.Json;
 using TelegramReportBot.Core.Enum;
 using TelegramReportBot.Core.Enums;
-using TelegramReportBot.Core.Interface;
 using TelegramReportBot.Core.Interfaces;
-using TelegramReportBot.Core.Models;
 using TelegramReportBot.Core.Models.Configuration;
-using TelegramReportBot.Core.Models.FileProcessing;
 using TelegramReportBot.Core.Models.Security;
 using TelegramReportBot.Core.Models.Statistics;
+using FileInfo = TelegramReportBot.Core.Models.FileProcessing.FileInfo;
+using FileProcessingResult = TelegramReportBot.Core.Models.FileProcessing.FileProcessingResult;
 
 namespace TelegramReportBot.Infrastructure.Services
 {
@@ -372,7 +371,7 @@ namespace TelegramReportBot.Infrastructure.Services
         /// <summary>
         /// Получение топ-файлов по различным критериям
         /// </summary>
-        public async Task<List<Core.Models.FileProcessing.FileInfo>> GetTopFilesAsync(string criteria, int count = 10)
+        public Task<List<FileInfo>> GetTopFilesAsync(string criteria, int count = 10)
         {
             lock (_lockObject)
             {
@@ -386,8 +385,8 @@ namespace TelegramReportBot.Infrastructure.Services
                     _ => query.OrderByDescending(f => f.ProcessedAt)
                 };
 
-                return result.Take(count)
-                    .Select(f => new Core.Models.FileProcessing.FileInfo
+                var list = result.Take(count)
+                    .Select(f => new FileInfo
                     {
                         FileName = f.FileName,
                         SizeBytes = f.FileSizeBytes,
@@ -396,6 +395,8 @@ namespace TelegramReportBot.Infrastructure.Services
                         TopicId = f.TopicId
                     })
                     .ToList();
+
+                return Task.FromResult(list);
             }
         }
 

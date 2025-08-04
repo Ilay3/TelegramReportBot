@@ -1,4 +1,7 @@
-﻿namespace TelegramReportBot.Core.Models;
+using System;
+using TelegramReportBot.Core.Enums;
+
+namespace TelegramReportBot.Core.Models.FileProcessing;
 
 /// <summary>
 /// Результат обработки файла
@@ -26,6 +29,11 @@ public class FileProcessingResult
     public int TopicId { get; set; }
 
     /// <summary>
+    /// Приоритет обработки
+    /// </summary>
+    public ProcessingPriority Priority { get; set; }
+
+    /// <summary>
     /// Сообщение об ошибке (если есть)
     /// </summary>
     public string? ErrorMessage { get; set; }
@@ -39,6 +47,16 @@ public class FileProcessingResult
     /// Размер файла в байтах
     /// </summary>
     public long FileSizeBytes { get; set; }
+
+    /// <summary>
+    /// Время обработки в миллисекундах
+    /// </summary>
+    public long ProcessingTimeMs { get; set; }
+
+    /// <summary>
+    /// Количество попыток отправки
+    /// </summary>
+    public int AttemptCount { get; set; }
 
     /// <summary>
     /// ID сообщения в Telegram

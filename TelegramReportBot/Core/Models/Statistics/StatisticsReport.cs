@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TelegramReportBot.Core.Models.FileProcessing;
+using FileInfo = TelegramReportBot.Core.Models.FileProcessing.FileInfo;
 
 namespace TelegramReportBot.Core.Models.Statistics
 {
@@ -50,7 +50,7 @@ namespace TelegramReportBot.Core.Models.Statistics
         /// <summary>
         /// Топ-файлы по размеру
         /// </summary>
-        public List<System.IO.FileInfo> LargestFiles { get; set; } = new();
+        public List<FileInfo> LargestFiles { get; set; } = new();
 
         /// <summary>
         /// Последние ошибки

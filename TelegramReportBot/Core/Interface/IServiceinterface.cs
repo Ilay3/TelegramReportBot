@@ -2,8 +2,8 @@
 using TelegramReportBot.Core.Models.Statistics;
 using TelegramReportBot.Core.Models.Security;
 using TelegramReportBot.Core.Models.Configuration;
-using TelegramReportBot.Core.Models.FileProcessing;
-using TelegramReportBot.Core.Models;
+using FileInfo = TelegramReportBot.Core.Models.FileProcessing.FileInfo;
+using FileProcessingResult = TelegramReportBot.Core.Models.FileProcessing.FileProcessingResult;
 using TelegramReportBot.Core.Enum;
 
 namespace TelegramReportBot.Core.Interfaces;
@@ -97,7 +97,7 @@ public interface IStatisticsService
     /// <summary>
     /// Получение топ-файлов по различным критериям
     /// </summary>
-    Task<List<System.IO.FileInfo>> GetTopFilesAsync(string criteria, int count = 10);
+    Task<List<FileInfo>> GetTopFilesAsync(string criteria, int count = 10);
 
     /// <summary>
     /// Получение трендов активности

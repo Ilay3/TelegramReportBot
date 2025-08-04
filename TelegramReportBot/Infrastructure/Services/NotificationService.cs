@@ -4,9 +4,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using TelegramReportBot.Core.Enum;
 using TelegramReportBot.Core.Enums;
-using TelegramReportBot.Core.Interface;
 using TelegramReportBot.Core.Interfaces;
-using TelegramReportBot.Core.Models;
 using TelegramReportBot.Core.Models.Configuration;
 using TelegramReportBot.Core.Models.Notifications;
 
@@ -521,39 +519,21 @@ namespace TelegramReportBot.Infrastructure.Services
                 var currentDayKey = now.ToString("yyyy-MM-dd");
                 var previousDayKey = now.AddDays(-1).ToString("yyyy-MM-dd");
 
+                List<ScheduledNotification> dueNotifications;
+
                 lock (_scheduledNotifications)
                 {
+                    dueNotifications = new List<ScheduledNotification>();
                     var keysToProcess = new[] { previousDayKey, currentDayKey };
 
                     foreach (var dayKey in keysToProcess)
                     {
-                        if (!_scheduledNotifications.ContainsKey(dayKey))
+                        if (!_scheduledNotifications.TryGetValue(dayKey, out var notifications))
                             continue;
 
-                        var notifications = _scheduledNotifications[dayKey];
-                        var dueNotifications = notifications
-                            .Where(sn => sn.ScheduledTime <= now && !sn.IsSent)
-                            .ToList();
+                        dueNotifications.AddRange(
+                            notifications.Where(sn => sn.ScheduledTime <= now && !sn.IsSent));
 
-                        foreach (var scheduledNotification in dueNotifications)
-                        {
-                            try
-                            {
-                                await SendNotificationAsync(scheduledNotification.Notification);
-                                scheduledNotification.IsSent = true;
-                                scheduledNotification.SentAt = now;
-
-                                _logger.LogInformation("⏰ Отправлено запланированное уведомление: {Title}",
-                                    scheduledNotification.Notification.Title);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "❌ Ошибка отправки запланированного уведомления: {Title}",
-                                    scheduledNotification.Notification.Title);
-                            }
-                        }
-
-                        // Удаляем отправленные уведомления старше суток
                         if (dayKey == previousDayKey)
                         {
                             notifications.RemoveAll(sn => sn.IsSent);
@@ -562,6 +542,24 @@ namespace TelegramReportBot.Infrastructure.Services
                                 _scheduledNotifications.Remove(dayKey);
                             }
                         }
+                    }
+                }
+
+                foreach (var scheduledNotification in dueNotifications)
+                {
+                    try
+                    {
+                        await SendNotificationAsync(scheduledNotification.Notification);
+                        scheduledNotification.IsSent = true;
+                        scheduledNotification.SentAt = now;
+
+                        _logger.LogInformation("⏰ Отправлено запланированное уведомление: {Title}",
+                            scheduledNotification.Notification.Title);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ Ошибка отправки запланированного уведомления: {Title}",
+                            scheduledNotification.Notification.Title);
                     }
                 }
             }
@@ -636,34 +634,4 @@ namespace TelegramReportBot.Infrastructure.Services
         }
     }
 
-    /// <summary>
-    /// Запланированное уведомление
-    /// </summary>
-    public class ScheduledNotification
-    {
-        public string Id { get; set; } = string.Empty;
-        public NotificationMessage Notification { get; set; } = new();
-        public DateTime ScheduledTime { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool IsSent { get; set; } = false;
-        public DateTime? SentAt { get; set; }
-    }
-
-    /// <summary>
-    /// Статистика уведомлений
-    /// </summary>
-    public class NotificationStatistics
-    {
-        public int TotalNotifications { get; set; }
-        public int NotificationsToday { get; set; }
-        public int NotificationsThisWeek { get; set; }
-        public int NotificationsThisMonth { get; set; }
-        public Dictionary<NotificationType, int> NotificationsByType { get; set; } = new();
-        public Dictionary<NotificationPriority, int> NotificationsByPriority { get; set; } = new();
-        public DateTime? LastNotification { get; set; }
-        public string? LastNotificationTitle { get; set; }
-        public int SubscribersCount { get; set; }
-        public int QueueSize { get; set; }
-        public int ScheduledNotificationsCount { get; set; }
-    }
 }

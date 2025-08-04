@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using System.Text.Json;
 using TelegramReportBot.Core.Enum;
 using TelegramReportBot.Core.Enums;
-using TelegramReportBot.Core.Interface;
 using TelegramReportBot.Core.Interfaces;
 using TelegramReportBot.Core.Models.Configuration;
 using TelegramReportBot.Core.Models.Security;
