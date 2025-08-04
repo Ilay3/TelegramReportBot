@@ -1,4 +1,7 @@
-﻿namespace TelegramReportBot.Core.Models.Configuration
+using System.Collections.Generic;
+using TelegramReportBot.Core.Models;
+
+namespace TelegramReportBot.Core.Models.Configuration
 {
     /// <summary>
     /// Расширенная конфигурация бота с дополнительными настройками

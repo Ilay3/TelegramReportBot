@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
-using TelegramReportBot.Core.Interface;
 using TelegramReportBot.Core.Interfaces;
 using TelegramReportBot.Core.Models;
 using TelegramReportBot.Core.Models.Configuration;
@@ -339,7 +338,7 @@ namespace TelegramReportBot.Infrastructure.Services
                 if (File.Exists(dbPath))
                 {
                     var backupDbPath = Path.Combine(dataDir, "sent_files.txt");
-                    await File.Copy(dbPath, backupDbPath, true);
+                    File.Copy(dbPath, backupDbPath, true);
                     _logger.LogDebug("💾 База данных отправленных файлов скопирована");
                 }
             }

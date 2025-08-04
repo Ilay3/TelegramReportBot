@@ -197,12 +197,12 @@ public class FileWatcherService : IFileWatcherService, IDisposable
     /// <summary>
     /// Принудительное сканирование папки
     /// </summary>
-    public async Task ForceScanAsync()
+    public Task ForceScanAsync()
     {
         try
         {
             _logger.LogInformation("🔄 Запуск принудительного сканирования папки");
-            await PeriodicDirectoryScan(null);
+            PeriodicDirectoryScan(null);
             _logger.LogInformation("✅ Принудительное сканирование завершено");
         }
         catch (Exception ex)
@@ -210,6 +210,8 @@ public class FileWatcherService : IFileWatcherService, IDisposable
             _logger.LogError(ex, "❌ Ошибка принудительного сканирования");
             throw;
         }
+
+        return Task.CompletedTask;
     }
 
     // Приватные методы

@@ -4,11 +4,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using TelegramReportBot.Core.Enum;
-using TelegramReportBot.Core.Enums;
 using TelegramReportBot.Core.Interface;
 using TelegramReportBot.Core.Interfaces;
 using TelegramReportBot.Core.Models.Configuration;
-using TelegramReportBot.Core.Models.Statistics;
 using TelegramReportBot.Infrastructure.Services;
 
 namespace TelegramReportBot;
@@ -157,8 +155,6 @@ internal class Program
 
                 // Подписываемся на события
                 _telegramService.ManualDistributionRequested += OnManualDistributionRequested;
-                _telegramService.StatisticsRequested += OnStatisticsRequested;
-                _telegramService.AdminCommandReceived += OnAdminCommandReceived;
 
                 // Запускаем сервисы в правильном порядке
                 _logger.LogInformation("📊 Инициализация сервиса статистики...");
@@ -217,13 +213,8 @@ internal class Program
 
             try
             {
-                // Уведомляем о завершении работы
-                await _telegramService.SendShutdownNotificationAsync();
-
                 // Отписываемся от событий
                 _telegramService.ManualDistributionRequested -= OnManualDistributionRequested;
-                _telegramService.StatisticsRequested -= OnStatisticsRequested;
-                _telegramService.AdminCommandReceived -= OnAdminCommandReceived;
 
                 // Останавливаем сервисы в обратном порядке
                 await _fileWatcherService.StopAsync(cancellationToken);
@@ -279,63 +270,6 @@ internal class Program
             {
                 _logger.LogError(ex, "❌ Ошибка при выполнении ручной рассылки {ReportType}", reportType);
                 _statisticsService.RecordDistributionError(reportType, ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Обработка запроса статистики
-        /// </summary>
-        private async Task<StatisticsReport> OnStatisticsRequested(string userId)
-        {
-            _logger.LogInformation("📊 Запрос статистики от пользователя {UserId}", userId);
-
-            try
-            {
-                var report = await _statisticsService.GenerateReportAsync();
-                _statisticsService.RecordStatisticsRequest(userId);
-                return report;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "❌ Ошибка при генерации статистики");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Обработка административных команд
-        /// </summary>
-        private async Task OnAdminCommandReceived(AdminCommand command, string userId)
-        {
-            _logger.LogInformation("⚙️ Получена админ-команда {Command} от {UserId}", command, userId);
-
-            try
-            {
-                // Проверяем права администратора
-                if (!await _securityService.IsAdminUserAsync(userId))
-                {
-                    _logger.LogWarning("🚫 Попытка выполнения админ-команды неавторизованным пользователем {UserId}", userId);
-                    return;
-                }
-
-                switch (command)
-                {
-                    case AdminCommand.ClearSentFiles:
-                        await _fileProcessingService.ClearSentFilesAsync();
-                        break;
-                    case AdminCommand.ForceBackup:
-                        // Реализация принудительного бэкапа
-                        break;
-                    case AdminCommand.ReloadConfig:
-                        // Реализация перезагрузки конфигурации
-                        break;
-                }
-
-                _statisticsService.RecordAdminAction(command, userId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "❌ Ошибка выполнения админ-команды {Command}", command);
             }
         }
 
